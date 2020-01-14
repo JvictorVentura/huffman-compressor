@@ -32,25 +32,69 @@ void addNodeLinkedList(Node **head, char character){
 
 }
 
-int printLinkedList(Node *head){
+int printLinkedList(Node *head, unsigned size){
 	if(head == NULL) return 1;
 
-
-	while(head->next != NULL){
+	for(unsigned i = 0; i<size; ++i){
 		printf("[%c, %i] ", head->character, head->quantity);
 		head = head->next;
 	}
-	
 	return 0;
 }
 
+Node *searchNode(Node *head, unsigned size, char character){
+	if(head == NULL) return NULL;
+	
+	for(unsigned i = 0; i<size ; ++i){
+		if(head->character == character)
+			return head;
+		
+		
+		head = head->next;
+	
+	}
+	
+	
+	return NULL;
+}
+
+unsigned sizeLinkedList(Node *head){
+	if(head == NULL) return 0;
+
+	unsigned size = 1;
+
+	while(head->next != NULL){
+		++size;
+		head = head->next;
+	}
+
+	return size;
+
+}
 
 
 int main(){
 	Node *head;
+	
 	addNodeLinkedList(&head, 'a');
-	printLinkedList(head);
-	free(head);	
+	addNodeLinkedList(&head, 'b');
+	
+	Node *test;
+	test = searchNode(head, sizeLinkedList(head), 'a');
+	++test->quantity;
+
+	printLinkedList(head, sizeLinkedList(head));
+
+
+
+	//backup to free memory later
+	
+	
+		
+
+	//freeing memory
+	free(head->next);
+	free(head);
 
 	return 0;
 }
