@@ -15,6 +15,9 @@ typedef struct Node{
 } Node;
 
 
+
+
+
 void addNodeLinkedList(Node **head, char character){
 
 	Node *node = malloc(sizeof(Node));
@@ -33,16 +36,23 @@ void addNodeLinkedList(Node **head, char character){
 
 }
 
-int printLinkedList(Node *head, unsigned size){
-	if(head == NULL) return 1;
+
+
+
+
+void printLinkedList(Node *head, unsigned size){
+	if(head == NULL) return;
 
 	for(unsigned i = 0; i<size; ++i){
 		printf("[%c, %i] ", head->character, head->quantity);
 		head = head->next;
 	}
 	printf("\n");
-	return 0;
+	return;
 }
+
+
+
 
 Node *searchNode(Node *head, unsigned size, char character){
 	if(head == NULL) return NULL;
@@ -56,9 +66,11 @@ Node *searchNode(Node *head, unsigned size, char character){
 	
 	}
 	
-	
 	return NULL;
 }
+
+
+
 
 unsigned sizeLinkedList(Node *head){
 	if(head == NULL) return 0;
@@ -75,17 +87,68 @@ unsigned sizeLinkedList(Node *head){
 }
 
 
+
+
+
+void sortLinkedList(Node **head, unsigned size){ /*descending order*/
+	if(head == NULL) return;
+	
+	Node *nodeArray[size];
+	Node *headAux = *head;
+
+	for(unsigned i = 0; i < size; ++i){
+		nodeArray[i] = headAux;
+		headAux = headAux->next; 
+	}	
+
+
+	unsigned start = 0;
+	unsigned biggestPos;
+	Node *biggest;
+	
+	
+	while(start != (size - 1)){
+		biggest = nodeArray[start];
+
+		for(unsigned i = start+1; i < size; ++i){
+			if(nodeArray[i]-> quantity > biggest->quantity)
+				biggestPos = i;
+		}		
+			
+			/*swap*/
+			biggest = nodeArray[biggestPos];
+			nodeArray[biggestPos] = nodeArray[start];
+			nodeArray[start] = biggest;			
+
+		++start;
+	}	
+
+
+	for(unsigned i=0; i < (size - 2); ++i){
+		nodeArray[i]->next = nodeArray[i+1];
+	}
+	
+	nodeArray[size-1]->next = NULL;
+		
+	*head = nodeArray[0];
+
+}
+
+
+
+
+
 int main(){
 	Node *head;
 	
 	addNodeLinkedList(&head, 'a');
-	printLinkedList(head, sizeLinkedList(head));
+	//printLinkedList(head, sizeLinkedList(head));
 
 	addNodeLinkedList(&head, 'b');
-	printLinkedList(head, sizeLinkedList(head));
+	//printLinkedList(head, sizeLinkedList(head));
 
 	addNodeLinkedList(&head, 'c');
-	printLinkedList(head, sizeLinkedList(head));
+	//printLinkedList(head, sizeLinkedList(head));
 
 	
 	Node *test;
@@ -95,7 +158,8 @@ int main(){
 	test->quantity += 3;
 
 	printLinkedList(head, sizeLinkedList(head));
-
+	sortLinkedList(&head, sizeLinkedList(head));
+	printLinkedList(head, sizeLinkedList(head));
 
 
 	//backup to free memory later
