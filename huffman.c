@@ -94,37 +94,33 @@ void sortLinkedList(Node **head, unsigned size){ /*descending order*/
 	if(head == NULL) return;
 	
 	Node *nodeArray[size];
-	Node *headAux = *head;
+	Node *nodeAux = *head;
 
 	for(unsigned i = 0; i < size; ++i){
-		nodeArray[i] = headAux;
-		headAux = headAux->next; 
+		nodeArray[i] = nodeAux;
+		nodeAux = nodeAux->next; 
 	}	
 
 
-	unsigned start = 0;
-	unsigned biggestPos;
-	Node *biggest;
-	
-	
-	while(start != (size - 1)){
-		biggest = nodeArray[start];
-
-		for(unsigned i = start+1; i < size; ++i){
-			if(nodeArray[i]-> quantity > biggest->quantity)
-				biggestPos = i;
-		}		
-			
-			/*swap*/
-			biggest = nodeArray[biggestPos];
-			nodeArray[biggestPos] = nodeArray[start];
-			nodeArray[start] = biggest;			
-
-		++start;
-	}	
+		
+	int min;
+	for(int i = 0; i < size -1; ++i){
+		min = i;
+		for(int j = i+1; j < size; ++j){
+			if(nodeArray[j]->quantity < nodeArray[min]->quantity)
+				min = j;
+		}
+		
+		if(min != i){
+			nodeAux = nodeArray[i];
+			nodeArray[i] = nodeArray[min];
+			nodeArray[min] = nodeAux;
+		}
+		
+	}
 
 
-	for(unsigned i=0; i < (size - 2); ++i){
+	for(unsigned i=0; i < (size - 1); ++i){
 		nodeArray[i]->next = nodeArray[i+1];
 	}
 	
