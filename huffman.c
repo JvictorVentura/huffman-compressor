@@ -130,21 +130,53 @@ void sortLinkedList(Node **head, unsigned size){ /*descending order*/
 
 }
 
+Node *popNodeLinkedList(Node **head){
+	if(*head == NULL) return NULL;
 
+	Node *node = *head;
+	*head = (*head)->next;
 
+	node->next = NULL;
 
+	return node;
+
+}
+
+void addNodeBinaryTree(Node *left, Node *right, Node **head){
+	Node *node = malloc(sizeof(Node));
+
+	node->type = 0;
+
+	node->right = right;
+	node->left = left;
+
+	node->quantity = right->quantity + left->quantity;
+
+	node->next = *head;
+	*head = node;
+
+}
+
+void buildHuffmanTree(Node **head){
+	while(sizeLinkedList(*head) > 1){
+		
+		sortLinkedList(head, sizeLinkedList(*head));
+		addNodeBinaryTree(popNodeLinkedList(head), popNodeLinkedList(head), head);
+		//sortLinkedList(head, sizeLinkedList(*head));
+	}
+}
 
 int main(){
-	Node *head;
+	Node *head = NULL;
 	
 	addNodeLinkedList(&head, 'a');
-	//printLinkedList(head, sizeLinkedList(head));
+	printLinkedList(head, sizeLinkedList(head));
 
 	addNodeLinkedList(&head, 'b');
-	//printLinkedList(head, sizeLinkedList(head));
+	printLinkedList(head, sizeLinkedList(head));
 
 	addNodeLinkedList(&head, 'c');
-	//printLinkedList(head, sizeLinkedList(head));
+	printLinkedList(head, sizeLinkedList(head));
 
 	
 	Node *test;
@@ -152,21 +184,38 @@ int main(){
 	test->quantity += 5;
 	test = searchNode(head, sizeLinkedList(head), 'c');
 	test->quantity += 3;
-
+	
 	printLinkedList(head, sizeLinkedList(head));
+
 	sortLinkedList(&head, sizeLinkedList(head));
+
+
+	/*backup to free memory later*/
+	Node *auxNode = head;
+	unsigned size = sizeLinkedList(head);
+	Node *node[size];
+	for(unsigned i  = 0; i < size; ++i){
+		node[i] = auxNode;
+		auxNode = auxNode->next;
+	}
+	
+	/**/
+
+	printLinkedList(head, sizeLinkedList(head));
+	
+	buildHuffmanTree(&head);	
+
 	printLinkedList(head, sizeLinkedList(head));
 
+	
 
-	//backup to free memory later
 	
 	
 		
 
 	//freeing memory
-	free(head->next->next);
-	free(head->next);
-	free(head);
-
+	for(unsigned i = 0; i < size; ++i){
+		free(node[i]);
+	}
 	return 0;
 }
