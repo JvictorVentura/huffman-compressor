@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> //remove later
 typedef char byte;
 
 typedef struct Node{
 	byte type;
 	char character;
 	unsigned quantity;
+	byte endOfFile;
 	
 	struct Node *right;
 	struct Node *left;
@@ -14,7 +16,15 @@ typedef struct Node{
 
 } Node;
 
+typedef struct huffmanCode{
 
+	char character;
+	char *charCode;
+	int sizeCode;
+
+	struct huffmanCode *next;
+
+} huffmanCode;
 
 
 
@@ -30,15 +40,30 @@ void addNodeLinkedList(Node **head, char character){
 		node->next = NULL;
 	}
 
+	node->endOfFile = 0;
 	node->type = 1;
 	node->character = character;
 	node->quantity = 1;
 
 }
 
+void addCharacterHuffmanTable(huffmanCode **headTable, char character, char *code, unsigned size){
+	
+	huffmanCode *node = malloc(sizeof(huffmanCode));
 
+	node->next = *headTable;
+	*headTable = node;
 
+	node->character = character;
+	node->sizeCode = size;
+	node->charCode = malloc(sizeof(char) * size);
 
+	for(unsigned i = 0; i < size; ++i){
+		node->charCode[i] = code[i];
+	}
+	
+
+}
 
 void printLinkedList(Node *head, unsigned size){
 	if(head == NULL) return;
@@ -49,6 +74,20 @@ void printLinkedList(Node *head, unsigned size){
 	}
 	printf("\n");
 	return;
+}
+
+void printHuffmanTable(huffmanCode *headTable){
+	while(headTable != NULL){
+		printf("%c = ", headTable->character);
+
+		for (unsigned i = 0; i < headTable->sizeCode; ++i){
+			printf("%c", headTable->charCode[i]);
+		}
+
+		printf("\n");
+
+		headTable = headTable->next;
+	}
 }
 
 
@@ -158,64 +197,122 @@ void addNodeBinaryTree(Node *left, Node *right, Node **head){
 }
 
 void buildHuffmanTree(Node **head){
+	//unsigned size = sizeLinkedList(*head); 
+
 	while(sizeLinkedList(*head) > 1){
 		
 		sortLinkedList(head, sizeLinkedList(*head));
 		addNodeBinaryTree(popNodeLinkedList(head), popNodeLinkedList(head), head);
-		//sortLinkedList(head, sizeLinkedList(*head));
+		
 	}
+		
+	
 }
+
+void buildHuffmanTable(Node *head, char *code, char nextCode, unsigned size, huffmanCode **headTable){
+	
+	if(size == 0){
+		buildHuffmanTable(head->left, NULL, '0', size+1, headTable);
+		buildHuffmanTable(head->right, NULL, '1', size+1, headTable);
+	}else{
+		char *newCode = malloc(sizeof(char) * size);
+	
+		if(size > 1){
+				for(unsigned i = 0; i < (size-1); ++i)
+					newCode[i] = code[i];				
+		}
+
+		newCode[(size-1)] = nextCode;
+
+		if(head->type == 0){
+			buildHuffmanTable(head->left, newCode, '0', size+1, headTable);
+			buildHuffmanTable(head->right, newCode, '1', size+1, headTable);		
+		}else{
+			addCharacterHuffmanTable(headTable, head->character, newCode, size);
+		}
+		
+		free(newCode);
+
+	}
+
+
+}
+
+void getHeightHuffmanTree(Node *head, unsigned *height, unsigned currentLayer){
+	
+	if(head->type == 0){
+		if(head->left != NULL)
+			getHeightHuffmanTree(head->left, height, currentLayer + 1);
+		if(head->right != NULL)
+			getHeightHuffmanTree(head->right, height, currentLayer + 1);
+	}else{
+		if(currentLayer > *height)
+			*height = currentLayer;
+	}
+
+}
+
+void freeBinaryTree(Node *head){
+	if(head->type == 0){
+		freeBinaryTree(head->left);
+		freeBinaryTree(head->right);
+	}
+	free(head);
+}
+
 
 int main(){
 	Node *head = NULL;
 	
-	addNodeLinkedList(&head, 'a');
-	printLinkedList(head, sizeLinkedList(head));
+	char stringTest[37];
+	strcpy(stringTest, "this is an example of a huffman tree");
 
-	addNodeLinkedList(&head, 'b');
-	printLinkedList(head, sizeLinkedList(head));
+	Node *aux = NULL;
 
-	addNodeLinkedList(&head, 'c');
-	printLinkedList(head, sizeLinkedList(head));
-
-	
-	Node *test;
-	test = searchNode(head, sizeLinkedList(head), 'a');
-	test->quantity += 5;
-	test = searchNode(head, sizeLinkedList(head), 'c');
-	test->quantity += 3;
-	
-	printLinkedList(head, sizeLinkedList(head));
-
-	sortLinkedList(&head, sizeLinkedList(head));
-
-
-	/*backup to free memory later*/
-	Node *auxNode = head;
-	unsigned size = sizeLinkedList(head);
-	Node *node[size];
-	for(unsigned i  = 0; i < size; ++i){
-		node[i] = auxNode;
-		auxNode = auxNode->next;
+	for(unsigned i = 0; i < 36; ++i){
+		aux = searchNode(head, sizeLinkedList(head), stringTest[i]);
+		if(aux == NULL)
+			addNodeLinkedList(&head, stringTest[i]);
+		else
+			aux->quantity++;
 	}
-	
-	/**/
+
 
 	printLinkedList(head, sizeLinkedList(head));
+	sortLinkedList(&head, sizeLinkedList(head));
+	printLinkedList(head, sizeLinkedList(head));
+	
 	
 	buildHuffmanTree(&head);	
-
 	printLinkedList(head, sizeLinkedList(head));
 
-	
+	huffmanCode *headTable = NULL;
+
+	buildHuffmanTable(head, NULL, ' ', 0, &headTable);
+	printHuffmanTable(headTable);
 
 	
+	freeBinaryTree(head);
 	
-		
-
 	//freeing memory
-	for(unsigned i = 0; i < size; ++i){
+	/*for(unsigned i = 0; i < size; ++i){
 		free(node[i]);
 	}
+	
+*/
+/*freeing memory*/
+	/*	size = sizeLinkedList(freeNode);
+		printf("%i\n", size);
+		Node *fNode[size];
+		for(unsigned i =0; i<size; ++i){
+			fNode[i] = freeNode;
+			freeNode = freeNode->next;
+		}
+
+	for(unsigned i = 0; i <size; ++i){
+		free(fNode[i]);
+	}
+	*/
+	
 	return 0;
 }
