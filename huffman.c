@@ -20,7 +20,8 @@ typedef struct huffmanCode{
 
 	char character;
 	char *charCode;
-	int sizeCode;
+	unsigned sizeCode;
+	byte endOfFile;
 
 	struct huffmanCode *next;
 
@@ -78,9 +79,13 @@ void printLinkedList(Node *head, unsigned size){
 
 void printHuffmanTable(huffmanCode *headTable){
 	while(headTable != NULL){
-		printf("%c = ", headTable->character);
+		if(headTable->character == '\n')
+			printf("\\n =");
+		else
+			printf("%c = ", headTable->character);
 
 		for (unsigned i = 0; i < headTable->sizeCode; ++i){
+			
 			printf("%c", headTable->charCode[i]);
 		}
 
@@ -108,6 +113,22 @@ Node *searchNode(Node *head, unsigned size, char character){
 	return NULL;
 }
 
+huffmanCode *searchCode(huffmanCode *head, unsigned size, char character){
+	if(head == NULL) return NULL;
+	
+	for(unsigned i = 0; i<size ; ++i){
+		if(head->character == character)
+			return head;
+		
+		
+		head = head->next;
+	
+	}
+	
+	return NULL;
+}
+
+
 
 
 
@@ -125,7 +146,19 @@ unsigned sizeLinkedList(Node *head){
 
 }
 
+unsigned sizeHuffmanTable(huffmanCode *head){
+	if(head == NULL) return 0;
 
+	unsigned size = 1;
+
+	while(head->next != NULL){
+		++size;
+		head = head->next;
+	}
+
+	return size;
+	
+}
 
 
 
@@ -169,6 +202,53 @@ void sortLinkedList(Node **head, unsigned size){ /*descending order*/
 
 }
 
+
+
+
+
+void sortHuffmanTable(huffmanCode **head, unsigned size){ /*descending order*/
+	if(head == NULL) return;
+	
+	huffmanCode *nodeArray[size];
+	huffmanCode *nodeAux = *head;
+
+	for(unsigned i = 0; i < size; ++i){
+		nodeArray[i] = nodeAux;
+		nodeAux = nodeAux->next; 
+	}	
+
+
+		
+	int min;
+	for(int i = 0; i < size -1; ++i){
+		min = i;
+		for(int j = i+1; j < size; ++j){
+			if(nodeArray[j]->sizeCode < nodeArray[min]->sizeCode)
+				min = j;
+		}
+		
+		if(min != i){
+			nodeAux = nodeArray[i];
+			nodeArray[i] = nodeArray[min];
+			nodeArray[min] = nodeAux;
+		}
+		
+	}
+
+
+	for(unsigned i=0; i < (size - 1); ++i){
+		nodeArray[i]->next = nodeArray[i+1];
+	}
+	
+	nodeArray[size-1]->next = NULL;
+		
+	*head = nodeArray[0];
+
+}
+
+
+
+
 Node *popNodeLinkedList(Node **head){
 	if(*head == NULL) return NULL;
 
@@ -195,6 +275,32 @@ void addNodeBinaryTree(Node *left, Node *right, Node **head){
 	*head = node;
 
 }
+
+void buildNodeList(Node **head, char *filename){
+	FILE *arq = fopen(filename, "rb");
+	int getChar = 0;
+	Node *holder = NULL;
+
+	if(arq == NULL){
+		printf("Erro ao abrir arquivo\n");
+		return;
+	}
+
+	while((getChar = fgetc(arq)) != EOF){
+		holder = searchNode(*head, sizeLinkedList(*head), (char) getChar);
+
+		if(holder == NULL)
+			addNodeLinkedList(head, getChar);
+		else
+			holder->quantity++;
+	}
+
+	addNodeLinkedList(head, '_');
+	(*head)->endOfFile = 1;
+
+	fclose(arq);
+}
+
 
 void buildHuffmanTree(Node **head){
 	//unsigned size = sizeLinkedList(*head); 
@@ -264,55 +370,47 @@ void freeBinaryTree(Node *head){
 int main(){
 	Node *head = NULL;
 	
-	char stringTest[37];
-	strcpy(stringTest, "this is an example of a huffman tree");
-
-	Node *aux = NULL;
-
-	for(unsigned i = 0; i < 36; ++i){
-		aux = searchNode(head, sizeLinkedList(head), stringTest[i]);
-		if(aux == NULL)
-			addNodeLinkedList(&head, stringTest[i]);
-		else
-			aux->quantity++;
-	}
-
-
-	printLinkedList(head, sizeLinkedList(head));
+	buildNodeList(&head, "file.txt");
 	sortLinkedList(&head, sizeLinkedList(head));
 	printLinkedList(head, sizeLinkedList(head));
-	
-	
-	buildHuffmanTree(&head);	
-	printLinkedList(head, sizeLinkedList(head));
+	buildHuffmanTree(&head);
+
+
+
+
+
+
+
+
+
+
+
+
 
 	huffmanCode *headTable = NULL;
 
 	buildHuffmanTable(head, NULL, ' ', 0, &headTable);
+	sortHuffmanTable(&headTable, sizeHuffmanTable(headTable));
 	printHuffmanTable(headTable);
 
 	
 	freeBinaryTree(head);
 	
-	//freeing memory
-	/*for(unsigned i = 0; i < size; ++i){
-		free(node[i]);
+	/*free head table*/
+	unsigned sizeHT = sizeHuffmanTable(headTable);
+	huffmanCode *arr[sizeHT];
+	huffmanCode *auxHT = headTable;
+	for(unsigned i = 0; i < sizeHT; ++i){
+		arr[i] = auxHT;
+		auxHT = auxHT->next;
 	}
 	
-*/
-/*freeing memory*/
-	/*	size = sizeLinkedList(freeNode);
-		printf("%i\n", size);
-		Node *fNode[size];
-		for(unsigned i =0; i<size; ++i){
-			fNode[i] = freeNode;
-			freeNode = freeNode->next;
-		}
+	for(unsigned i = 0; i < sizeHT; ++i){
+		free(arr[i]->charCode);
+		free(arr[i]);
 
-	for(unsigned i = 0; i <size; ++i){
-		free(fNode[i]);
 	}
-	*/
 	
+	/**/
 	return 0;
 }
