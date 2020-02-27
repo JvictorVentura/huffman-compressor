@@ -369,7 +369,7 @@ unsigned getQuantityOfNodes(Node *headTree){
 }
 
 
-void writeCodeOnFile(Node *headTree, huffmanCode *headTable, char *filename){
+void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	if(headTree == NULL || headTable == NULL){
 		printf("ERRO\n");
 		return;
@@ -401,7 +401,7 @@ void writeCodeOnFile(Node *headTree, huffmanCode *headTable, char *filename){
 			aux[quantity++] = aux[i]->right;
 			typeAndChildren[i] += 1;
 		}
-		//printBinary(typeAndChildren[i]);
+		
 
 
 	}
@@ -416,14 +416,8 @@ void writeCodeOnFile(Node *headTree, huffmanCode *headTable, char *filename){
 	}
 
 
-	/*for(unsigned i = 0; i < size; ++i){
-		printf("%c ",aux[i]->character);
-		printBinary(typeAndChildren[i]);
-	}*/
 
-
-
-	FILE *compFile = fopen("compressed", "wb+");
+	FILE *compFile = fopen("fileCompressed", "wb+");
 
 	for(byte i = 4; i > 0;--i)
 		fputc(size >> (i-1)*8, compFile);
@@ -451,24 +445,32 @@ void writeCodeOnFile(Node *headTree, huffmanCode *headTable, char *filename){
 			//printBinary(byteCode);
 			if(code == NULL){
 				if((charHolder = fgetc(orgFile)) == EOF){
-					endOfFile = 1;
+					endOfFile = 2;
 					code = searchCode(headTable, sizeHuffmanTable(headTable), '_',1);
+					printf("%c\n", code->character);
 				}else{
 					code = searchCode(headTable, sizeHuffmanTable(headTable), charHolder,0);
 
-
-					printf("charHolder\n");
-					printf("%c ", charHolder);
-					printBinary(charHolder);
-					printf("\n");
+					//printf("%c\n", code->character);
+					/*printf("charHolder\n");
+					printf("%c ", charHolder);*/
+					//printBinary(charHolder);
+					//printf("\n");
 				}
 				
 				codeIndex = 0;
 
 			}
 
+			//printf("codeIndex %i\n", codeIndex);
+			//printf("code->sizeCode %i\n", code->sizeCode);
+
 
 			if(codeIndex >= code->sizeCode){
+				if(endOfFile == 2){
+					endOfFile = 1;
+					break;
+				}
 				code = NULL;
 				codeIndex = 0;
 			}else{
@@ -480,9 +482,8 @@ void writeCodeOnFile(Node *headTree, huffmanCode *headTable, char *filename){
 
 
 		}
-		printf("--------------------\n");
-		printBinary(byteCode);
-		printf("--------------------\n");
+		
+		//printBinary(byteCode);
 
 		fputc(byteCode, compFile);
 		byteCode = 0;
@@ -492,6 +493,10 @@ void writeCodeOnFile(Node *headTree, huffmanCode *headTable, char *filename){
 	free(typeAndChildren);
 	
 }
+
+
+
+
 
 
 
@@ -512,110 +517,108 @@ void decompress(char *filename){
 	char *character = malloc(sizeof(byte)*size);
 	byte *typeAndChildren = malloc(sizeof(byte)*size);
 
-
 	
 	for(int i = 0; i < size; ++i)
 		typeAndChildren[i] = fgetc(compFile);
+		
 	
 	for(int i = 0; i < size; ++i)
 		character[i] = fgetc(compFile);
 
+	//printf("%d\n", size);
 
-	int start = 0;
-	int end = 1;
-	int quantityNodes = 0;
-	int removed = 0;
-	int *removedNodes = malloc(sizeof(int));
-	removedNodes[0] = 0;
-	int layerQuantity = 1;
-  
+	/*for(int i = 0; i < size; ++i)
+		printf("[%c]", character[i]);
+*/
+	Node *headTree = malloc(sizeof(Node)*size);
+	int p1 = 0;
+	int p2 = 1;
 
-	while(end < size){
-		removed = 0;
-		quantityNodes = 0;
-		for(int i = start; i < end; ++i){
-			for(byte j = 2; j > 0; --j){
-				if((typeAndChildren[i]&j) == j)
-					++quantityNodes;
-				else
-					++removed;
-			}
-					
-		}
+	while(p1 < size){
 		
-		removedNodes = realloc(removedNodes, sizeof(int)*(layerQuantity+1));
-		removedNodes[layerQuantity]= removed + (removedNodes[layerQuantity-1]*2);
-		layerQuantity++;
-		start = end;
-		end +=quantityNodes;
+		headTree[p1].character = character[p1];
 
+		
+		if((typeAndChildren[p1]&4) == 4)
+			headTree[p1].type = 1;
+		else if((typeAndChildren[p1]&8) == 8)
+			headTree[p1].type = 2;
+		else{
+			headTree[p1].type = 3;
+
+			if((typeAndChildren[p1]&2) == 2)
+				headTree[p1].left = &headTree[p2++];
+			else
+				headTree[p1].left = NULL;
+
+			if((typeAndChildren[p1]&1) == 1)
+				headTree[p1].right = &headTree[p2++];
+			else
+				headTree[p1].right = NULL;
+
+		}
+
+		++p1;
+		
 	}
+	printf("\n\n");
 
-	/*for(int i = 0; i < size; ++i){
-		printf("%c ", character[i]);
-		printBinary(typeAndChildren[i]);
-	}*/
+	/*for(int i = 0; i < size; ++i)
+		printf("[%c%d]", headTree[i].character, headTree[i].type);
+*/
+	
 
-	for(int i = 0; i < layerQuantity; ++i)
-		printf("%i\n", removedNodes[i]);
 	
-	
-	FILE *decompr = fopen("decompressed", "wb+");
+	FILE *decompr = fopen("fileDecompressed", "wb+");
 	if(decompr == NULL){
 		printf("ERRO [1]\n");
 		return;
 	}
 
-	
-	int indexArray = 0;
-	int bitIndex = 0;
-	int layer = 0;
 
-	while(typeAndChildren[indexArray] < 8){
-		indexArray = 0;
-		layer = 0;
-		while(typeAndChildren[indexArray] < 4){
+	/*for(int i = 0; i < size; ++i)
+		if(headTree[i].character == character[i])
+			printf("IGUAL\n");
+		else
+			printf("DIFERENTE\n");
+*/
+
+
+	byte endOfFile = 0;
+	int bitIndex = 128;
+	Node *aux = &headTree[0];
+	byteHolder = fgetc(compFile);
+
+	while(endOfFile != 1){
+		bitIndex = 128;
+
+		while(bitIndex > 0){
 			
-			if(bitIndex == 0){
-				byteHolder = fgetc(compFile);
-				bitIndex = 128;
-				//printBinary(byteHolder);
+			if(aux->type == 1){
+				//printf("%c", aux->character);
+				fputc(aux->character, decompr);
+				aux = &headTree[0];
+			}else if(aux->type == 2){
+				endOfFile = 1;
+				break;
+				//printf("ENTROU CARALHO\n");
+			}else{
+				//printf("%c ", aux->character);
+				//printf("%d\n", aux->type);
+				if((byteHolder&bitIndex) == bitIndex){
+					aux = aux->right;
+					//printf("right\n");
+				}
+				else{
+					aux = aux->left;
+					//printf("left\n");
+				}
+
+				bitIndex = bitIndex >> 1;
 			}
-
-
-			printf("------------------\n");
-			printBinary(byteHolder);
-			printBinary(bitIndex);
-			printf("indexArray %i\n", indexArray);
-			printf("layer %i\n",layer);
-			printf("removedNodes %i\n", removedNodes[layer]);
-			printf("\n");
-
-
-
-			/*printBinary(byteHolder);
-			printBinary(bitIndex);
-			printf("------------------\n");
-			*/
-			//printf("indexArray %i\n", indexArray);
-
-			if((byteHolder&bitIndex) == bitIndex)
-				indexArray = ((2*indexArray)+2) - removedNodes[layer++];
-			else
-				indexArray = ((2*indexArray)+1) - removedNodes[layer++];
-
-			bitIndex = bitIndex >> 1;
-
-			
-			
 		}
 
-		printf("%c\n", character[indexArray]);
-
-		if((typeAndChildren[indexArray] < 8))
-			fputc(character[indexArray], decompr);
-		
-
+		byteHolder = fgetc(compFile);
 	}
 	
 	
@@ -627,21 +630,21 @@ void decompress(char *filename){
 
 
 int main(){
-	/*
+	
 	Node *headTree = NULL;
 	
-	buildNodeList(&headTree, "test2.txt");
+	buildNodeList(&headTree, "file");
 	sortLinkedList(&headTree, sizeLinkedList(headTree));
-	//printLinkedList(headTree, sizeLinkedList(headTree));
+	printLinkedList(headTree, sizeLinkedList(headTree));
 	
 	buildHuffmanTree(&headTree);
 
 	huffmanCode *headTable = NULL;
 	buildHuffmanTable(headTree, NULL, ' ', 0, &headTable);
 	sortHuffmanTable(&headTable, sizeHuffmanTable(headTable));
-	printHuffmanTable(headTable);
+	//printHuffmanTable(headTable);
 
-	compress(headTree, headTable, "test2.txt");
+	compress(headTree, headTable, "file");
 	
 	//free binaryTree
 
@@ -662,8 +665,8 @@ int main(){
 
 	}
 	
-	*/
-	decompress("compressed");
+	
+	//decompress("fileCompressed");
 
 
 	return 0;
