@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <string.h> //remove later
-#include "printBinary.h"
+#include <string.h>
 typedef char byte;
 
 typedef struct Node{
-	byte type;		//1char 2EOF 3nó vazio
+	byte type;		//1char 2EOF 3empty Node
 	char character;
 	unsigned quantity;
 	
@@ -164,7 +163,7 @@ unsigned sizeHuffmanTable(huffmanCode *head){
 
 
 
-void sortLinkedList(Node **head, unsigned size){ /*descending order*/
+void sortLinkedList(Node **head, unsigned size){ 
 	if(head == NULL) return;
 	
 	Node *nodeArray[size];
@@ -298,7 +297,7 @@ void buildNodeList(Node **head, char *filename){
 			holder->quantity++;
 	}
 
-	addNodeLinkedList(head, '_'); //codigo de parada
+	addNodeLinkedList(head, '_'); //codigo de parada (EOF)
 	(*head)->type = 2;			  //
 
 	fclose(arq);
@@ -377,8 +376,7 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	
 	unsigned size = getQuantityOfNodes(headTree);
 
-	//printf("%u\n", size);
-	
+		
 	Node *aux[size];
 	byte *typeAndChildren = malloc(sizeof(byte)*size);
 
@@ -442,28 +440,21 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	while(endOfFile != 1){
 		byteIndex = 128;
 		while(byteIndex > 0){
-			//printBinary(byteCode);
 			if(code == NULL){
 				if((charHolder = fgetc(orgFile)) == EOF){
+
 					endOfFile = 2;
 					code = searchCode(headTable, sizeHuffmanTable(headTable), '_',1);
-					printf("%c\n", code->character);
+
 				}else{
+
 					code = searchCode(headTable, sizeHuffmanTable(headTable), charHolder,0);
 
-					//printf("%c\n", code->character);
-					/*printf("charHolder\n");
-					printf("%c ", charHolder);*/
-					//printBinary(charHolder);
-					//printf("\n");
 				}
 				
 				codeIndex = 0;
 
 			}
-
-			//printf("codeIndex %i\n", codeIndex);
-			//printf("code->sizeCode %i\n", code->sizeCode);
 
 
 			if(codeIndex >= code->sizeCode){
@@ -483,7 +474,6 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 
 		}
 		
-		//printBinary(byteCode);
 
 		fputc(byteCode, compFile);
 		byteCode = 0;
@@ -525,63 +515,47 @@ void decompress(char *filename){
 	for(int i = 0; i < size; ++i)
 		character[i] = fgetc(compFile);
 
-	//printf("%d\n", size);
+	
 
-	/*for(int i = 0; i < size; ++i)
-		printf("[%c]", character[i]);
-*/
+
 	Node *headTree = malloc(sizeof(Node)*size);
-	int p1 = 0;
-	int p2 = 1;
+	int index1 = 0;
+	int index2 = 1;
 
-	while(p1 < size){
+	while(index1 < size){
 		
-		headTree[p1].character = character[p1];
+		headTree[index1].character = character[index1];
 
 		
-		if((typeAndChildren[p1]&4) == 4)
-			headTree[p1].type = 1;
-		else if((typeAndChildren[p1]&8) == 8)
-			headTree[p1].type = 2;
+		if((typeAndChildren[index1]&4) == 4)
+			headTree[index1].type = 1;
+		else if((typeAndChildren[index1]&8) == 8)
+			headTree[index1].type = 2;
 		else{
-			headTree[p1].type = 3;
+			headTree[index1].type = 3;
 
-			if((typeAndChildren[p1]&2) == 2)
-				headTree[p1].left = &headTree[p2++];
+			if((typeAndChildren[index1]&2) == 2)
+				headTree[index1].left = &headTree[index2++];
 			else
-				headTree[p1].left = NULL;
+				headTree[index1].left = NULL;
 
-			if((typeAndChildren[p1]&1) == 1)
-				headTree[p1].right = &headTree[p2++];
+			if((typeAndChildren[index1]&1) == 1)
+				headTree[index1].right = &headTree[index2++];
 			else
-				headTree[p1].right = NULL;
+				headTree[index1].right = NULL;
 
 		}
 
-		++p1;
+		++index1;
 		
 	}
-	printf("\n\n");
-
-	/*for(int i = 0; i < size; ++i)
-		printf("[%c%d]", headTree[i].character, headTree[i].type);
-*/
 	
-
 	
 	FILE *decompr = fopen("fileDecompressed", "wb+");
 	if(decompr == NULL){
 		printf("ERRO [1]\n");
 		return;
 	}
-
-
-	/*for(int i = 0; i < size; ++i)
-		if(headTree[i].character == character[i])
-			printf("IGUAL\n");
-		else
-			printf("DIFERENTE\n");
-*/
 
 
 	byte endOfFile = 0;
@@ -595,23 +569,24 @@ void decompress(char *filename){
 		while(bitIndex > 0){
 			
 			if(aux->type == 1){
-				//printf("%c", aux->character);
+
 				fputc(aux->character, decompr);
 				aux = &headTree[0];
+
 			}else if(aux->type == 2){
+
 				endOfFile = 1;
 				break;
-				//printf("ENTROU CARALHO\n");
+
 			}else{
-				//printf("%c ", aux->character);
-				//printf("%d\n", aux->type);
+				
 				if((byteHolder&bitIndex) == bitIndex){
 					aux = aux->right;
-					//printf("right\n");
+					
 				}
 				else{
 					aux = aux->left;
-					//printf("left\n");
+					
 				}
 
 				bitIndex = bitIndex >> 1;
@@ -635,7 +610,7 @@ int main(){
 	
 	buildNodeList(&headTree, "file");
 	sortLinkedList(&headTree, sizeLinkedList(headTree));
-	printLinkedList(headTree, sizeLinkedList(headTree));
+	//printLinkedList(headTree, sizeLinkedList(headTree));
 	
 	buildHuffmanTree(&headTree);
 
