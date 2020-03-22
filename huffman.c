@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "printBinary.h"
 typedef char byte;
 
 typedef struct Node{
@@ -420,8 +421,22 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	for(byte i = 4; i > 0;--i)
 		fputc(size >> (i-1)*8, compFile);
 
-	for(unsigned i = 0; i < size; ++i)
-		fputc(typeAndChildren[i], compFile);
+
+	byte byteHolder = 0;
+	int index = 0;
+	byte x = 4;
+	while(index < size){
+		if(x < 0){
+			fputc(byteHolder, compFile);
+			x = 4;
+			byteHolder = 0;
+		}
+		byteHolder += typeAndChildren[index++] << x;
+		x -= 4;
+	}
+	fputc(byteHolder, compFile);
+
+
 
 	for(unsigned i = 0; i < size; ++i)
 		fputc(aux[i]->character, compFile);
@@ -494,6 +509,8 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 
 void decompress(char *filename){
 	FILE *compFile = fopen(filename, "rb");
+	
+
 	int byteHolder = 0;
 	int size = 0;
 	for(byte j = 4; j > 0; --j){
@@ -504,14 +521,27 @@ void decompress(char *filename){
 			break;
 	}
 
+
 	char *character = malloc(sizeof(byte)*size);
 	byte *typeAndChildren = malloc(sizeof(byte)*size);
 
+
+
+	int index = 0;
+	byte x = -4;
+	while(index < size){
+		if(x < 0){
+			byteHolder = fgetc(compFile);
+			x = 4;
+		}
+
+		typeAndChildren[index++] = (byteHolder >> x) & 0xF;
+		x -= 4;
+	}
 	
-	for(int i = 0; i < size; ++i)
-		typeAndChildren[i] = fgetc(compFile);
-		
+
 	
+
 	for(int i = 0; i < size; ++i)
 		character[i] = fgetc(compFile);
 
@@ -521,7 +551,6 @@ void decompress(char *filename){
 	Node *headTree = malloc(sizeof(Node)*size);
 	int index1 = 0;
 	int index2 = 1;
-
 	while(index1 < size){
 		
 		headTree[index1].character = character[index1];
@@ -550,6 +579,8 @@ void decompress(char *filename){
 		
 	}
 	
+
+
 	
 	FILE *decompr = fopen("fileDecompressed", "wb+");
 	if(decompr == NULL){
@@ -562,7 +593,6 @@ void decompress(char *filename){
 	int bitIndex = 128;
 	Node *aux = &headTree[0];
 	byteHolder = fgetc(compFile);
-
 	while(endOfFile != 1){
 		bitIndex = 128;
 
@@ -597,18 +627,23 @@ void decompress(char *filename){
 	}
 	
 	
-	fclose(decompr);	
+
+	for(int i = 0; i < size; ++i)
+		free(&headTree[i]);
+	fclose(decompr);
+	fclose(compFile);	
 	free(typeAndChildren);
-	fclose(compFile);
+	free(character);
+	
 }
 
 
 
 int main(){
-	
+	/*
 	Node *headTree = NULL;
 	
-	buildNodeList(&headTree, "file");
+	buildNodeList(&headTree, "test2");
 	sortLinkedList(&headTree, sizeLinkedList(headTree));
 	//printLinkedList(headTree, sizeLinkedList(headTree));
 	
@@ -619,7 +654,7 @@ int main(){
 	sortHuffmanTable(&headTable, sizeHuffmanTable(headTable));
 	//printHuffmanTable(headTable);
 
-	compress(headTree, headTable, "file");
+	compress(headTree, headTable, "test2");
 	
 	//free binaryTree
 
@@ -639,9 +674,9 @@ int main(){
 		free(arr[i]);
 
 	}
+	*/
 	
-	
-	//decompress("fileCompressed");
+	decompress("fileCompressed");
 
 
 	return 0;
