@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "printBinary.h"
+//#include "printBinary.h"
 typedef char byte;
 #include "node.h"
 #include "huffmanTable.h"
@@ -35,6 +35,64 @@ void assignTypeAndChildren(byte *typeAndChildren, Node **heap, int size){
 
 }
 
+char *newFileName(char *fileName, byte *dotLocation, byte *sizeOfExtension){
+	printf("%c\n", fileName[0]);
+	int sizeOfFileName = strlen(fileName);
+	*dotLocation = sizeOfFileName - 1;
+
+	for(int i = sizeOfFileName - 1; i >= 0; --i){
+		if(fileName[i] == '.'){
+			*dotLocation = i;
+			break;
+		}else
+			++(*sizeOfExtension);
+	}
+
+	if(sizeOfFileName == *sizeOfExtension)
+		*sizeOfExtension = 0;
+
+	char *nFileName = NULL;
+
+	if(*dotLocation != sizeOfFileName - 1){
+		nFileName = malloc((*dotLocation) + 6);
+		
+		for(int i = 0; i < sizeOfFileName; ++i)
+			nFileName[i] = fileName[i];
+
+		nFileName[(*dotLocation) + 1] = 'h';
+		nFileName[(*dotLocation) + 2] = 'u';
+		nFileName[(*dotLocation) + 3] = 'f';
+		nFileName[(*dotLocation) + 4] = 'f';
+		nFileName[(*dotLocation) + 5] = '\0';
+	}else{
+		nFileName = malloc(sizeOfFileName + 5);
+
+		for(int i = 0; i < sizeOfFileName; ++i)
+			nFileName[i] = fileName[i];
+
+		nFileName[sizeOfFileName] = '.';
+		nFileName[sizeOfFileName + 1] = 'h';
+		nFileName[sizeOfFileName + 2] = 'u';
+		nFileName[sizeOfFileName + 3] = 'f';
+		nFileName[sizeOfFileName + 4] = 'f';
+		nFileName[sizeOfFileName + 5] = '\0';
+
+	}
+
+	return nFileName;
+}
+
+void writeExtensionOnFile(FILE *compressedFile, char *fileName, int sizeOfExtension, int  extensionLocation){
+
+	fputc(sizeOfExtension, compressedFile);
+	printf("%d\n", sizeOfExtension);
+	if(sizeOfExtension > 0)
+		for(int i = 0; i < sizeOfExtension; ++i)
+			fputc(fileName[extensionLocation + i], compressedFile);
+		
+	
+}
+
 
 
 void compress(Node *headTree, huffmanCode *headTable, char *filename){
@@ -42,7 +100,12 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 		printf("ERRO\n");
 		return;
 	}
-	
+
+	byte dotLocation = 0;
+	byte sizeOfExtension = 0;
+
+	char *nFileName = newFileName(filename, &dotLocation, &sizeOfExtension);
+
 	unsigned size = getQuantityOfNodesOfBinaryTree(headTree);
 	Node *aux[size];
 	byte *typeAndChildren = malloc(sizeof(byte)*size);
@@ -52,7 +115,8 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 
 
 	FILE *compFile = fopen("fileCompressed", "wb+");
-	
+	writeExtensionOnFile(compFile, filename, sizeOfExtension, dotLocation+1);
+
 	writeSizeOfHeap(size, compFile);
 	writeNodeInformation(typeAndChildren, size, compFile);
 	writeNodeCharacter(aux, compFile, size);
@@ -65,6 +129,8 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	fclose(originalFile);
 	fclose(compFile);
 	free(typeAndChildren);
+	free(nFileName);
+
 	
 }
 
