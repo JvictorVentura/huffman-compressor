@@ -1,6 +1,7 @@
 void writeSizeOfHeap(unsigned size,  FILE *compressedFile){
-	for(byte i = 4; i > 0; --i)
-		fputc(size >> (i-1) * 8, compressedFile);
+	for(byte i = 4 ; i > 0; --i)
+		//fputc(size >> ((i - 1) * 8), compressedFile);
+		fputc(size >> ((i - 1) * 8), compressedFile);
 }
 
 void writeNodeInformation(byte *nodeInformation, unsigned size, FILE *compressedFile){
