@@ -114,7 +114,7 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	assignTypeAndChildren(typeAndChildren, aux, size);
 
 
-	FILE *compFile = fopen("fileCompressed", "wb+");
+	FILE *compFile = fopen(nFileName, "wb+");
 	writeExtensionOnFile(compFile, filename, sizeOfExtension, dotLocation+1);
 
 	writeSizeOfHeap(size, compFile);
@@ -135,6 +135,38 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 }
 
 
+char *originalFileName(FILE *compressedFile, char *fileName){
+
+	int sizeOfExtension = fgetc(compressedFile);
+	int sizeOfFileName = strlen(fileName);
+	if(sizeOfExtension == 0){
+		char *originalName = malloc(sizeOfFileName - 4);
+		int i;
+
+		for(i = 0; i < sizeOfFileName - 5; ++i)
+			originalName[i] = fileName[i];
+
+		originalName[i] = '\0';
+		return originalName;
+	}else{
+		char extension[sizeOfExtension];
+
+		for(int i = 0; i < sizeOfExtension; ++i)
+			extension[i] = (char) fgetc(compressedFile);
+
+		char *originalName = malloc((sizeOfFileName - 3 + sizeOfExtension));
+
+		int i;
+		for(i = 0; i < sizeOfFileName - 4; ++i)
+			originalName[i] = fileName[i];
+		int j;
+		for(j = 0; j < sizeOfExtension; ++j)
+			originalName[i + j] = extension[j];
+		originalName[i + j] = '\0';
+
+		return originalName;
+	}
+}
 
 
 int decompress(char *filename){
@@ -144,6 +176,9 @@ int decompress(char *filename){
 		return 1;
 	}
 	
+	char *orgFileName = originalFileName(compFile, filename);
+
+	printf("%s\n", orgFileName);
 
 	int size = getSizeOfHeap(compFile);
 
@@ -160,7 +195,7 @@ int decompress(char *filename){
 	reconstructBinaryTree(headTree, typeAndChildren, character, size);
 	
 	
-	FILE *decompr = fopen("fileDecompressed", "wb+");
+	FILE *decompr = fopen(orgFileName, "wb+");
 	if(decompr == NULL){
 		printf("ERRO [1]\n");
 		return 1;
@@ -176,7 +211,7 @@ int decompress(char *filename){
 	fclose(compFile);	
 	free(typeAndChildren);
 	free(character);
-	
+	free(orgFileName);
 	return 0;
 }
 
