@@ -115,8 +115,12 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 
 
 	FILE *compFile = fopen(nFileName, "wb+");
-	writeExtensionOnFile(compFile, filename, sizeOfExtension, dotLocation+1);
+	fputc('h', compFile);
+	fputc('u', compFile);
+	fputc('f', compFile);
+	fputc('f', compFile);
 
+	writeExtensionOnFile(compFile, filename, sizeOfExtension, dotLocation+1);
 	writeSizeOfHeap(size, compFile);
 	writeNodeInformation(typeAndChildren, size, compFile);
 	writeNodeCharacter(aux, compFile, size);
@@ -175,10 +179,15 @@ int decompress(char *filename){
 		printf("Archive does not exist!\n");
 		return 1;
 	}
-	
-	char *orgFileName = originalFileName(compFile, filename);
 
-	printf("%s\n", orgFileName);
+	char magicNumber[4] = {'h','u','f','f'};
+	for(int i = 0; i < 4; ++i)
+		if(((char) fgetc(compFile)) != magicNumber[i]){
+			printf("Arquivo não é do formato .huff\n");
+			return 1;
+		}
+			
+	char *orgFileName = originalFileName(compFile, filename);
 
 	int size = getSizeOfHeap(compFile);
 
