@@ -5,8 +5,7 @@ int getSizeOfHeap( FILE *compressedFile){
 
 	for( byte bitShift = 3; bitShift >= 0; --bitShift){
 		byteGot = fgetc(compressedFile);
-		//printf("%x\n", byteGot);
-		size += byteGot;
+		size += byteGot << (bitShift*8);
 	}
 	
 	return size;

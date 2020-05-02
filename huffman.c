@@ -9,34 +9,39 @@ typedef char byte;
 #include "writeCompressedFile.h"
 #include "decompressFile.h"
 
-void assignTypeAndChildren(byte *typeAndChildren, Node **heap, int size){
+
+//	Run through the heap and store the information of each node on the array
+//	nodeInformation. Each node uses half of a byte to store its information.
+void assignNodeInformation(byte *nodeInformation, Node **heap, int size){
 
 	for(int i = 0; i < size; ++i){
-
-		typeAndChildren[i] = 0;   //clean the variable
+		nodeInformation[i] = 0;   //clean the array 
 
 	
-		if(heap[i]->type == 1)
-			typeAndChildren[i] += 4;
-		
-		if(heap[i]->type == 2)
-			typeAndChildren[i] += 8;
+		if(heap[i]->type == 1)			//
+			nodeInformation[i] += 4;	//
+										//store the type of the node
+		if(heap[i]->type == 2)			//
+			nodeInformation[i] += 8;	//
 
 		
 
-		if(heap[i]->left != NULL)
-			typeAndChildren[i] += 2;
+		if(heap[i]->left != NULL)		// if the node has children on the left, turn this bit on
+			nodeInformation[i] += 2;
 
 		if(heap[i]->right != NULL)
-			typeAndChildren[i] += 1;
+			nodeInformation[i] += 1;	// if the node has children on the right, turn this bit on
 
 	
 	}
 
 }
 
+
+//	Based on the given filename, creates a new with the extension .huff .
+//	if the filename already has an extension, or multiples extensions
+//	the function replaces the last.
 char *newFileName(char *fileName, byte *dotLocation, byte *sizeOfExtension){
-	printf("%c\n", fileName[0]);
 	int sizeOfFileName = strlen(fileName);
 	*dotLocation = sizeOfFileName - 1;
 
@@ -82,10 +87,9 @@ char *newFileName(char *fileName, byte *dotLocation, byte *sizeOfExtension){
 	return nFileName;
 }
 
-void writeExtensionOnFile(FILE *compressedFile, char *fileName, int sizeOfExtension, int  extensionLocation){
+void writeOriginalExtensionOnFile(FILE *compressedFile, char *fileName, int sizeOfExtension, int  extensionLocation){
 
 	fputc(sizeOfExtension, compressedFile);
-	printf("%d\n", sizeOfExtension);
 	if(sizeOfExtension > 0)
 		for(int i = 0; i < sizeOfExtension; ++i)
 			fputc(fileName[extensionLocation + i], compressedFile);
@@ -93,7 +97,11 @@ void writeExtensionOnFile(FILE *compressedFile, char *fileName, int sizeOfExtens
 	
 }
 
-
+void writeMagicNumber(FILE *compressedFile){
+	char magicNumber[4] = {'h', 'u', 'f', 'f'};
+	for(int i = 0; i < 4; ++i)
+		fputc(magicNumber[i], compressedFile);
+}
 
 void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	if(headTree == NULL || headTable == NULL){
@@ -108,31 +116,27 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 
 	unsigned size = getQuantityOfNodesOfBinaryTree(headTree);
 	Node *aux[size];
-	byte *typeAndChildren = malloc(sizeof(byte)*size);
-
+	byte *nodeInformation = malloc(sizeof(byte)*size);
+	printf("size = %d\n", size);
 	putTreeOnHeap(headTree, aux, size);
-	assignTypeAndChildren(typeAndChildren, aux, size);
+	assignNodeInformation(nodeInformation, aux, size);
 
+	FILE *compressedFile = fopen(nFileName, "wb+");
 
-	FILE *compFile = fopen(nFileName, "wb+");
-	fputc('h', compFile);
-	fputc('u', compFile);
-	fputc('f', compFile);
-	fputc('f', compFile);
-
-	writeExtensionOnFile(compFile, filename, sizeOfExtension, dotLocation+1);
-	writeSizeOfHeap(size, compFile);
-	writeNodeInformation(typeAndChildren, size, compFile);
-	writeNodeCharacter(aux, compFile, size);
+	writeMagicNumber(compressedFile);
+	writeOriginalExtensionOnFile(compressedFile, filename, sizeOfExtension, dotLocation+1);
+	writeSizeOfHeap(size, compressedFile);
+	writeNodeInformation(nodeInformation, size, compressedFile);
+	writeNodeCharacter(aux, compressedFile, size);
 
 
 	FILE *originalFile = fopen(filename, "rb");
 
-	compressAndWriteFile(originalFile, compFile, headTable);
+	compressAndWriteFile(originalFile, compressedFile, headTable);
 
 	fclose(originalFile);
-	fclose(compFile);
-	free(typeAndChildren);
+	fclose(compressedFile);
+	free(nodeInformation);
 	free(nFileName);
 
 	
@@ -172,6 +176,15 @@ char *originalFileName(FILE *compressedFile, char *fileName){
 	}
 }
 
+int checkMagicNumber(FILE *compressedFile){
+	char magicNumber[4] = {'h','u','f','f'};
+	for(int i = 0; i < 4; ++i)
+		if(((char) fgetc(compressedFile)) != magicNumber[i]){
+			printf("Arquivo não é do formato .huff\n");
+			return 1;
+		}
+	return 0;
+}
 
 int decompress(char *filename){
 	FILE *compFile = fopen(filename, "rb");
@@ -179,18 +192,13 @@ int decompress(char *filename){
 		printf("Archive does not exist!\n");
 		return 1;
 	}
-
-	char magicNumber[4] = {'h','u','f','f'};
-	for(int i = 0; i < 4; ++i)
-		if(((char) fgetc(compFile)) != magicNumber[i]){
-			printf("Arquivo não é do formato .huff\n");
-			return 1;
-		}
+	if(checkMagicNumber(compFile))
+		return 1;
 			
 	char *orgFileName = originalFileName(compFile, filename);
 
 	int size = getSizeOfHeap(compFile);
-
+	printf("size = %d\n", size);
 	char *character = malloc(sizeof(byte)*size);		
 	byte *typeAndChildren = malloc(sizeof(byte)*size);	
 
@@ -198,9 +206,8 @@ int decompress(char *filename){
 	getNodeInformation(typeAndChildren, size, compFile);
 	getCharacter( character, compFile, size);
 
-
 	Node *headTree = malloc(sizeof(Node)*size);		
-
+	
 	reconstructBinaryTree(headTree, typeAndChildren, character, size);
 	
 	
@@ -227,7 +234,6 @@ int decompress(char *filename){
 
 
 int main(){
-
 	int option = 0;
 	printf("[1]Compress\n[2]Decompress\n[0]Exit\n");
 	scanf("%i", &option);
