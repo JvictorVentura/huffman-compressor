@@ -87,6 +87,8 @@ char *newFileName(char *fileName, byte *dotLocation, byte *sizeOfExtension){
 	return nFileName;
 }
 
+//	Write on the file the size of the original extension, and the extension replaced 
+//	(if it has extension), respectively.
 void writeOriginalExtensionOnFile(FILE *compressedFile, char *fileName, int sizeOfExtension, int  extensionLocation){
 
 	fputc(sizeOfExtension, compressedFile);
@@ -97,7 +99,7 @@ void writeOriginalExtensionOnFile(FILE *compressedFile, char *fileName, int size
 	
 }
 
-void writeMagicNumber(FILE *compressedFile){
+void writeMagicNumberOnFile(FILE *compressedFile){
 	char magicNumber[4] = {'h', 'u', 'f', 'f'};
 	for(int i = 0; i < 4; ++i)
 		fputc(magicNumber[i], compressedFile);
@@ -117,13 +119,12 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	unsigned size = getQuantityOfNodesOfBinaryTree(headTree);
 	Node *aux[size];
 	byte *nodeInformation = malloc(sizeof(byte)*size);
-	printf("size = %d\n", size);
 	putTreeOnHeap(headTree, aux, size);
 	assignNodeInformation(nodeInformation, aux, size);
 
 	FILE *compressedFile = fopen(nFileName, "wb+");
 
-	writeMagicNumber(compressedFile);
+	writeMagicNumberOnFile(compressedFile);
 	writeOriginalExtensionOnFile(compressedFile, filename, sizeOfExtension, dotLocation+1);
 	writeSizeOfHeap(size, compressedFile);
 	writeNodeInformation(nodeInformation, size, compressedFile);
@@ -142,7 +143,8 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	
 }
 
-
+//	Return the original file name of the file, based on the 
+//	extension saved.
 char *originalFileName(FILE *compressedFile, char *fileName){
 
 	int sizeOfExtension = fgetc(compressedFile);
@@ -162,7 +164,7 @@ char *originalFileName(FILE *compressedFile, char *fileName){
 		for(int i = 0; i < sizeOfExtension; ++i)
 			extension[i] = (char) fgetc(compressedFile);
 
-		char *originalName = malloc((sizeOfFileName - 3 + sizeOfExtension));
+		char *originalName = NULL; //= malloc((sizeOfFileName - 3 + sizeOfExtension));
 
 		int i;
 		for(i = 0; i < sizeOfFileName - 4; ++i)
@@ -198,7 +200,6 @@ int decompress(char *filename){
 	char *orgFileName = originalFileName(compFile, filename);
 
 	int size = getSizeOfHeap(compFile);
-	printf("size = %d\n", size);
 	char *character = malloc(sizeof(byte)*size);		
 	byte *typeAndChildren = malloc(sizeof(byte)*size);	
 
@@ -261,10 +262,6 @@ int main(){
 		buildHuffmanTable(headTree, NULL, ' ', 0, &headTable);
 		sortHuffmanTable(&headTable, sizeHuffmanTable(headTable));
 		//printHuffmanTable(headTable);
-
-
-		//unsigned a = getQuantityOfNodesOfBinaryTree(headTree);
-		//printf("%u\n", a);
 
 
 		compress(headTree, headTable, filename);

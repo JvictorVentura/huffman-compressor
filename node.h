@@ -57,6 +57,7 @@ unsigned sizeLinkedList(Node *head){
 
 }
 
+// Selection sort
 void sortLinkedList(Node **head, unsigned size){ 
 	if(head == NULL) return;
 	
@@ -142,8 +143,8 @@ Node *popNodeLinkedList(Node **head){
 
 
 
-/*
-void printLinkedList(Node *head, unsigned size){
+
+/*void printLinkedList(Node *head, unsigned size){
 	if(head == NULL) return;
 
 	for(unsigned i = 0; i<size; ++i){

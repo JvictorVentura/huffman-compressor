@@ -80,6 +80,7 @@ unsigned sizeHuffmanTable(huffmanCode *head){
 	
 }
 
+//	Sort the huffman table so the search doesnt take too long.
 void sortHuffmanTable(huffmanCode **head, unsigned size){ /*descending order*/
 	if(head == NULL) return;
 	

@@ -4,6 +4,9 @@ void writeSizeOfHeap(unsigned size,  FILE *compressedFile){
 		fputc(size >> ((i - 1) * 8), compressedFile);
 }
 
+//	Writes the information of the Nodes on 4 bits
+//	saving space by fitting the information of 2 Nodes
+//	on one byte.
 void writeNodeInformation(byte *nodeInformation, unsigned size, FILE *compressedFile){
 
 	byte byteWritten = 0;
@@ -34,6 +37,8 @@ void writeNodeCharacter(Node **node, FILE *compressedFile, unsigned size){
 
 }
 
+//	Get the character/byte and wite its code on the compressed file.
+//	Refactor this function would be great.
 void compressAndWriteFile(FILE *originalFile, FILE *compressedFile, huffmanCode *headTable){
 
 	huffmanCode *code = NULL;

@@ -1,3 +1,6 @@
+//	The size of the file is saved in 4 bytes,
+//	I dont know if I am overestimating the size of
+//	the heap, but will stay this way for now.
 int getSizeOfHeap( FILE *compressedFile){
 
 	int size = 0;
@@ -11,6 +14,9 @@ int getSizeOfHeap( FILE *compressedFile){
 	return size;
 }
 
+//	As was said on the other function, the information of
+//	2 Nodes is stored in one byte, so this function detach
+//	the information.
 void getNodeInformation( byte *nodeInformation, int size, FILE *compressedFile){
 
 	int byteHolder = 0;
@@ -30,6 +36,7 @@ void getNodeInformation( byte *nodeInformation, int size, FILE *compressedFile){
 
 }
 
+//	Get the Node characters for the heap.
 void getCharacter(char *character, FILE *compressedFile, int size){
 
 	for(int i = 0; i < size; ++i)
