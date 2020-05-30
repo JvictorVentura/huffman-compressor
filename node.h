@@ -26,6 +26,9 @@ void addNodeLinkedList(Node **head, char character){
 	node->character = character;
 	node->quantity = 1;
 
+	node->right = NULL;
+	node->left = NULL;
+
 }
 
 Node *searchNode(Node *head, unsigned size, char character){
