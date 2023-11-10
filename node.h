@@ -1,7 +1,7 @@
 typedef struct Node{
 	byte type;		//0b01 = char, 0b10 = EOF, 0b11 = Empty Node.
 	char character;
-	unsigned quantity;
+	uint16_t quantity;
 	
 	struct Node *right;
 	struct Node *left;
@@ -31,10 +31,10 @@ void addNodeLinkedList(Node **head, char character){
 
 }
 
-Node *searchNode(Node *head, unsigned size, char character){
+Node *searchNode(Node *head, uint16_t size, char character){
 	if(head == NULL) return NULL;
 	
-	for(unsigned i = 0; i<size ; ++i){
+	for(uint16_t i = 0; i<size ; ++i){
 		if(head->character == character)
 			return head;
 		
@@ -46,10 +46,10 @@ Node *searchNode(Node *head, unsigned size, char character){
 	return NULL;
 }
 
-unsigned sizeLinkedList(Node *head){
+uint16_t sizeLinkedList(Node *head){
 	if(head == NULL) return 0;
 
-	unsigned size = 1;
+	uint16_t size = 1;
 
 	while(head->next != NULL){
 		++size;
@@ -61,13 +61,13 @@ unsigned sizeLinkedList(Node *head){
 }
 
 // Selection sort
-void sortLinkedList(Node **head, unsigned size){ 
+void sortLinkedList(Node **head, uint16_t size){ 
 	if(head == NULL) return;
 	
 	Node *nodeArray[size];
 	Node *nodeAux = *head;
 
-	for(unsigned i = 0; i < size; ++i){
+	for(uint16_t i = 0; i < size; ++i){
 		nodeArray[i] = nodeAux;
 		nodeAux = nodeAux->next; 
 	}	
@@ -91,7 +91,7 @@ void sortLinkedList(Node **head, unsigned size){
 	}
 
 
-	for(unsigned i=0; i < (size - 1); ++i){
+	for(uint16_t i=0; i < (size - 1); ++i){
 		nodeArray[i]->next = nodeArray[i+1];
 	}
 	
@@ -147,10 +147,10 @@ Node *popNodeLinkedList(Node **head){
 
 
 
-/*void printLinkedList(Node *head, unsigned size){
+/*void printLinkedList(Node *head, uint16_t size){
 	if(head == NULL) return;
 
-	for(unsigned i = 0; i<size; ++i){
+	for(uint16_t i = 0; i<size; ++i){
 		printf("[%c, %i] ", head->character, head->quantity);
 		head = head->next;
 	}

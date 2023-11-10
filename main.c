@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "printBinary.h"
+#include <stdint.h>
 typedef char byte;
 #include "node.h"
 #include "huffmanTable.h"
@@ -116,7 +116,7 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 
 	char *nFileName = newFileName(filename, &dotLocation, &sizeOfExtension);
 
-	unsigned size = getQuantityOfNodesOfBinaryTree(headTree);
+	uint16_t size = getQuantityOfNodesOfBinaryTree(headTree);
 	Node *aux[size];
 	byte *nodeInformation = malloc(sizeof(byte)*size);
 	putTreeOnHeap(headTree, aux, size);
@@ -273,15 +273,15 @@ int main(){
 		freeBinaryTree(headTree);
 		
 		//free headTable
-		unsigned sizeHT = sizeHuffmanTable(headTable);
+		uint16_t sizeHT = sizeHuffmanTable(headTable);
 		huffmanCode *arr[sizeHT];
 		huffmanCode *auxHT = headTable;
-		for(unsigned i = 0; i < sizeHT; ++i){
+		for(uint16_t i = 0; i < sizeHT; ++i){
 			arr[i] = auxHT;
 			auxHT = auxHT->next;
 		}
 		
-		for(unsigned i = 0; i < sizeHT; ++i){
+		for(uint16_t i = 0; i < sizeHT; ++i){
 			free(arr[i]->charCode);
 			free(arr[i]);
 

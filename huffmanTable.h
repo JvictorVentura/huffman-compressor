@@ -2,7 +2,7 @@ typedef struct huffmanCode{
 
 	char character;
 	char *charCode;
-	unsigned sizeCode;
+	uint16_t sizeCode;
 	byte endOfFile;
 
 	struct huffmanCode *next;
@@ -11,7 +11,7 @@ typedef struct huffmanCode{
 
 
 
-void addCharacterHuffmanTable(huffmanCode **headTable, char character, char *code, unsigned size, byte typeChar){
+void addCharacterHuffmanTable(huffmanCode **headTable, char character, char *code, uint16_t size, byte typeChar){
 	
 	huffmanCode *node = malloc(sizeof(huffmanCode));
 
@@ -23,7 +23,7 @@ void addCharacterHuffmanTable(huffmanCode **headTable, char character, char *cod
 	node->endOfFile = typeChar;
 	node->charCode = malloc(sizeof(char) * size);
 
-	for(unsigned i = 0; i < size; ++i){
+	for(uint16_t i = 0; i < size; ++i){
 		node->charCode[i] = code[i];
 	}
 	
@@ -38,7 +38,7 @@ void printHuffmanTable(huffmanCode *headTable){
 		else
 			printf("%c = ", headTable->character);
 
-		for (unsigned i = 0; i < headTable->sizeCode; ++i){
+		for (uint16_t i = 0; i < headTable->sizeCode; ++i){
 			
 			printf("%c", headTable->charCode[i]);
 		}
@@ -51,10 +51,10 @@ void printHuffmanTable(huffmanCode *headTable){
 	}
 }*/
 
-huffmanCode *searchCode(huffmanCode *head, unsigned size, char character, byte typeChar){
+huffmanCode *searchCode(huffmanCode *head, uint16_t size, char character, byte typeChar){
 	if(head == NULL) return NULL;
 	
-	for(unsigned i = 0; i<size ; ++i){
+	for(uint16_t i = 0; i<size ; ++i){
 		if((head->character == character) && (head->endOfFile == typeChar))
 			return head;
 		
@@ -66,10 +66,10 @@ huffmanCode *searchCode(huffmanCode *head, unsigned size, char character, byte t
 	return NULL;
 }
 
-unsigned sizeHuffmanTable(huffmanCode *head){
+uint16_t sizeHuffmanTable(huffmanCode *head){
 	if(head == NULL) return 0;
 
-	unsigned size = 1;
+	uint16_t size = 1;
 
 	while(head->next != NULL){
 		++size;
@@ -82,13 +82,13 @@ unsigned sizeHuffmanTable(huffmanCode *head){
 
 //	Sort the huffman table so the search doesnt take too long.
 //	It uses insertion sort.
-void sortHuffmanTable(huffmanCode **head, unsigned size){ 
+void sortHuffmanTable(huffmanCode **head, uint16_t size){ 
 	if(head == NULL) return;
 	
 	huffmanCode *nodeArray[size];
 	huffmanCode *nodeAux = *head;
 
-	for(unsigned i = 0; i < size; ++i){
+	for(uint16_t i = 0; i < size; ++i){
 		nodeArray[i] = nodeAux;
 		nodeAux = nodeAux->next; 
 	}	
@@ -112,7 +112,7 @@ void sortHuffmanTable(huffmanCode **head, unsigned size){
 	}
 
 
-	for(unsigned i=0; i < (size - 1); ++i){
+	for(uint16_t i=0; i < (size - 1); ++i){
 		nodeArray[i]->next = nodeArray[i+1];
 	}
 	
@@ -124,7 +124,7 @@ void sortHuffmanTable(huffmanCode **head, unsigned size){
 
 
 
-void buildHuffmanTable(Node *head, char *code, char nextCode, unsigned size, huffmanCode **headTable){
+void buildHuffmanTable(Node *head, char *code, char nextCode, uint16_t size, huffmanCode **headTable){
 	
 	if(size == 0){
 		buildHuffmanTable(head->left, NULL, '0', size+1, headTable);
@@ -133,7 +133,7 @@ void buildHuffmanTable(Node *head, char *code, char nextCode, unsigned size, huf
 		char *newCode = malloc(sizeof(char) * size);
 	
 		if(size > 1){
-				for(unsigned i = 0; i < (size-1); ++i)
+				for(uint16_t i = 0; i < (size-1); ++i)
 					newCode[i] = code[i];				
 		}
 

@@ -1,4 +1,4 @@
-void writeSizeOfHeap(unsigned size,  FILE *compressedFile){
+void writeSizeOfHeap(uint16_t size,  FILE *compressedFile){
 	for(byte i = 4 ; i > 0; --i)
 		//fputc(size >> ((i - 1) * 8), compressedFile);
 		fputc(size >> ((i - 1) * 8), compressedFile);
@@ -7,7 +7,7 @@ void writeSizeOfHeap(unsigned size,  FILE *compressedFile){
 //	Writes the information of the Nodes on 4 bits
 //	saving space by fitting the information of 2 Nodes
 //	on one byte.
-void writeNodeInformation(byte *nodeInformation, unsigned size, FILE *compressedFile){
+void writeNodeInformation(byte *nodeInformation, uint16_t size, FILE *compressedFile){
 
 	byte byteWritten = 0;
 	int index = 0;
@@ -30,9 +30,9 @@ void writeNodeInformation(byte *nodeInformation, unsigned size, FILE *compressed
 
 }
 
-void writeNodeCharacter(Node **node, FILE *compressedFile, unsigned size){
+void writeNodeCharacter(Node **node, FILE *compressedFile, uint16_t size){
 
-	for(unsigned i = 0; i < size; ++i)
+	for(uint16_t i = 0; i < size; ++i)
 		fputc(node[i]->character, compressedFile);
 
 }
@@ -44,9 +44,9 @@ void compressAndWriteFile(FILE *originalFile, FILE *compressedFile, huffmanCode 
 	huffmanCode *code = NULL;
 	byte endFlag = 0;
 	int bitIndicator = 0x80;
-	unsigned byteWritten = 0;
+	uint16_t byteWritten = 0;
 	int character = 0;
-	unsigned codeStringIndex = 0;
+	uint16_t codeStringIndex = 0;
 
 	while(endFlag != 1){
 

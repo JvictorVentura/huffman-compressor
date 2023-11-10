@@ -29,7 +29,7 @@ void getNodeInformation( byte *nodeInformation, int size, FILE *compressedFile){
 			bitShift = 4;
 		}
 
-		nodeInformation[index++] = (unsigned) (byteHolder >> bitShift);
+		nodeInformation[index++] = (uint16_t) (byteHolder >> bitShift);
 		bitShift -= 4;	
 	
 	}

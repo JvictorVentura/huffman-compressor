@@ -36,7 +36,7 @@ void buildBinaryTree(Node **head){
 
 
 
-unsigned getQuantityOfNodesOfBinaryTree(Node *headTree){
+uint16_t getQuantityOfNodesOfBinaryTree(Node *headTree){
 	if(headTree == NULL)
 		return 0;
 	
