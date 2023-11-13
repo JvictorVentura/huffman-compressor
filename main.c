@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-typedef char byte;
 #include "node.h"
 #include "huffmanTable.h"
 #include "binaryTree.h"
@@ -11,8 +10,8 @@ typedef char byte;
 
 
 //	Run through the heap and store the information of each node on the array
-//	nodeInformation. Each node uses half of a byte to store its information.
-void assignNodeInformation(byte *nodeInformation, Node **heap, int size){
+//	nodeInformation. Each node uses half of a uint8_t to store its information.
+void assignNodeInformation(uint8_t *nodeInformation, Node **heap, int size){
 
 	for(int i = 0; i < size; ++i){
 		nodeInformation[i] = 0;   //clean the array 
@@ -41,12 +40,12 @@ void assignNodeInformation(byte *nodeInformation, Node **heap, int size){
 //	Based on the given filename, creates a new with the extension .huff .
 //	if the filename already has an extension, or multiples extensions
 //	the function replaces the last.
-char *newFileName(char *fileName, byte *dotLocation, byte *sizeOfExtension){
-	int sizeOfFileName = strlen(fileName);
+char *newFileName(char *filename, uint8_t *dotLocation, uint8_t *sizeOfExtension){
+	int sizeOfFileName = strlen(filename);
 	*dotLocation = sizeOfFileName - 1;
 
 	for(int i = sizeOfFileName - 1; i >= 0; --i){
-		if(fileName[i] == '.'){
+		if(filename[i] == '.'){
 			*dotLocation = i;
 			break;
 		}else
@@ -56,31 +55,36 @@ char *newFileName(char *fileName, byte *dotLocation, byte *sizeOfExtension){
 	if(sizeOfFileName == *sizeOfExtension)
 		*sizeOfExtension = 0;
 
-	char *nFileName = NULL;
+	static char *nFileName;
+	
 
 	if(*dotLocation != sizeOfFileName - 1){
-		nFileName = malloc((*dotLocation) + 6);
+		//nFileName = malloc((*dotLocation) + 6);
 		
-		for(int i = 0; i < sizeOfFileName; ++i)
-			nFileName[i] = fileName[i];
+		//for(int i = 0; i < sizeOfFileName; ++i)
+		//	nFileName[i] = fileName[i];
+		strncpy(nFileName, filename, *dotLocation);
+		strcat(nFileName, "huff");
 
-		nFileName[(*dotLocation) + 1] = 'h';
-		nFileName[(*dotLocation) + 2] = 'u';
-		nFileName[(*dotLocation) + 3] = 'f';
-		nFileName[(*dotLocation) + 4] = 'f';
-		nFileName[(*dotLocation) + 5] = '\0';
+		//nFileName[(*dotLocation) + 1] = 'h';
+		//nFileName[(*dotLocation) + 2] = 'u';
+		//nFileName[(*dotLocation) + 3] = 'f';
+		//nFileName[(*dotLocation) + 4] = 'f';
+		//nFileName[(*dotLocation) + 5] = '\0';
 	}else{
 		nFileName = malloc(sizeOfFileName + 5);
 
-		for(int i = 0; i < sizeOfFileName; ++i)
-			nFileName[i] = fileName[i];
+		strcpy(nFileName, filename);
+		strcat(nFileName, ".huff");
+		//for(int i = 0; i < sizeOfFileName; ++i)
+		//	nFileName[i] = fileName[i];
 
-		nFileName[sizeOfFileName] = '.';
-		nFileName[sizeOfFileName + 1] = 'h';
-		nFileName[sizeOfFileName + 2] = 'u';
-		nFileName[sizeOfFileName + 3] = 'f';
-		nFileName[sizeOfFileName + 4] = 'f';
-		nFileName[sizeOfFileName + 5] = '\0';
+		//nFileName[sizeOfFileName] = '.';
+		//nFileName[sizeOfFileName + 1] = 'h';
+		//nFileName[sizeOfFileName + 2] = 'u';
+		//nFileName[sizeOfFileName + 3] = 'f';
+		//nFileName[sizeOfFileName + 4] = 'f';
+		//nFileName[sizeOfFileName + 5] = '\0';
 
 	}
 
@@ -111,14 +115,14 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 		return;
 	}
 
-	byte dotLocation = 0;
-	byte sizeOfExtension = 0;
+	uint8_t dotLocation = 0;
+	uint8_t sizeOfExtension = 0;
 
 	char *nFileName = newFileName(filename, &dotLocation, &sizeOfExtension);
 
 	uint16_t size = getQuantityOfNodesOfBinaryTree(headTree);
 	Node *aux[size];
-	byte *nodeInformation = malloc(sizeof(byte)*size);
+	uint8_t *nodeInformation = malloc(sizeof(uint8_t)*size);
 	putTreeOnHeap(headTree, aux, size);
 	assignNodeInformation(nodeInformation, aux, size);
 
@@ -138,14 +142,14 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	fclose(originalFile);
 	fclose(compressedFile);
 	free(nodeInformation);
-	free(nFileName);
+	//free(nFileName);
 
 	
 }
 
 //	Return the original file name of the file, based on the 
 //	extension saved.
-char *originalFileName(FILE *compressedFile, char *fileName){
+char *originalFileName(FILE *compressedFile, char *fileName){		// rework this later
 
 	int sizeOfExtension = fgetc(compressedFile);
 	int sizeOfFileName = strlen(fileName);
@@ -188,20 +192,20 @@ int checkMagicNumber(FILE *compressedFile){
 	return 0;
 }
 
-int decompress(char *filename){
-	FILE *compFile = fopen(filename, "rb");
+int decompress(char *compressed_file, char *decompressed_file){
+	FILE *compFile = fopen(compressed_file, "rb");
 	if(compFile == NULL){
-		printf("Archive does not exist!\n");
+		printf("File does not exist!\n");
 		return 1;
 	}
 	if(checkMagicNumber(compFile))
 		return 1;
 			
-	char *orgFileName = originalFileName(compFile, filename);
+	char *orgFileName = originalFileName(compFile, compressed_file);
 
 	int size = getSizeOfHeap(compFile);
-	char *character = malloc(sizeof(byte)*size);		
-	byte *typeAndChildren = malloc(sizeof(byte)*size);	
+	char *character = malloc(sizeof(uint8_t)*size);		
+	uint8_t *typeAndChildren = malloc(sizeof(uint8_t)*size);	
 
 
 	getNodeInformation(typeAndChildren, size, compFile);
@@ -212,87 +216,90 @@ int decompress(char *filename){
 	reconstructBinaryTree(headTree, typeAndChildren, character, size);
 	
 	
-	FILE *decompr = fopen(orgFileName, "wb+");
+	FILE *decompr = NULL;
+	/*if(decompressed_file != NULL){
+		decompr = fopen(decompressed_file, "wb+");
+	}else{
+		decompr = fopen("decompressedfile", "wb+");		//CHANGE LATER
+	}*/
+	decompr = fopen(orgFileName, "wb+");	
 	if(decompr == NULL){
 		printf("ERRO [1]\n");
 		return 1;
 	}
-
+	//printf("1\n");
 	decompressAndWrite(compFile, decompr, headTree);
 		
 	//free all memory used and close files
-
+	
 	freeBinaryTree(headTree);
 
 	fclose(decompr);
 	fclose(compFile);	
 	free(typeAndChildren);
 	free(character);
-	free(orgFileName);
+	//free(orgFileName);
 	return 0;
 }
 
 
 
-int main(){
-	int option = 0;
-	printf("[1]Compress\n[2]Decompress\n[0]Exit\n");
-	scanf("%i", &option);
-	byte error;
+int main(int argc, char *argv[]){
+	//int option = 0;
+	//printf("[1]Compress\n[2]Decompress\n[0]Exit\n");
+	//scanf("%i", &option);
+	uint8_t error;
 
-	char *filename = malloc(sizeof(char)*50);
+	//char *filename = malloc(sizeof(char)*50);
 
-	if(option == 1){
-		printf("Write the name of the file to be compressed\n\t[Note: the file name must be less than 50 characters or won't be accepted]\n");
-		scanf("%s", filename);
-
-		Node *headTree = NULL;
+	if(argc > 2){
+		//printf("Write the name of the file to be compressed\n\t[Note: the file name must be less than 50 characters or won't be accepted]\n");
+		//scanf("%s", filename);
+		if(strcmp(argv[1], "-c") == 0){
+			Node *headTree = NULL;
 		
-		error = buildNodeList(&headTree, filename);
+			error = buildNodeList(&headTree, argv[2]);
 
-		if(error == 1)					// if the archive does not exist
-			return 0;
+			if(error == 1)					// if the archive does not exist
+				return 0;
 
-		sortLinkedList(&headTree, sizeLinkedList(headTree));
-		//printLinkedList(headTree, sizeLinkedList(headTree));
+			sortLinkedList(&headTree, sizeLinkedList(headTree));
+			buildBinaryTree(&headTree);
+
+			huffmanCode *headTable = NULL;
+			buildHuffmanTable(headTree, NULL, ' ', 0, &headTable);
+			sortHuffmanTable(&headTable, sizeHuffmanTable(headTable));
 		
-		buildBinaryTree(&headTree);
+			compress(headTree, headTable, argv[2]);
+			
+			//free binaryTree
+			freeBinaryTree(headTree);
+			
+			//free headTable
+			uint16_t sizeHT = sizeHuffmanTable(headTable);
+			huffmanCode *arr[sizeHT];
+			huffmanCode *auxHT = headTable;
+			for(uint16_t i = 0; i < sizeHT; ++i){
+				arr[i] = auxHT;
+				auxHT = auxHT->next;
+			}
+			
+			for(uint16_t i = 0; i < sizeHT; ++i){
+				free(arr[i]->charCode);
+				free(arr[i]);
 
-		huffmanCode *headTable = NULL;
-		buildHuffmanTable(headTree, NULL, ' ', 0, &headTable);
-		sortHuffmanTable(&headTable, sizeHuffmanTable(headTable));
-		//printHuffmanTable(headTable);
-
-
-		compress(headTree, headTable, filename);
-		
-		
-
-		//free binaryTree
-
-		freeBinaryTree(headTree);
-		
-		//free headTable
-		uint16_t sizeHT = sizeHuffmanTable(headTable);
-		huffmanCode *arr[sizeHT];
-		huffmanCode *auxHT = headTable;
-		for(uint16_t i = 0; i < sizeHT; ++i){
-			arr[i] = auxHT;
-			auxHT = auxHT->next;
+			}
+		}else if(strcmp(argv[1], "-d") == 0){
+			if(argc > 3)
+				decompress(argv[2], argv[3]);
+			else
+				decompress(argv[2], NULL);
 		}
+
 		
-		for(uint16_t i = 0; i < sizeHT; ++i){
-			free(arr[i]->charCode);
-			free(arr[i]);
 
-		}
-
-	}else if(option == 2){
-		printf("Write the name of the file to be decompressed\n\t[Note: the file name must be less than 50 characters or won't be accepted]\n");
-		scanf("%s", filename);
-		error = decompress(filename);
-		if(error == 1)
-			return 0;
+	}else{
+		printf("Command invalid\n");
 	}
 
 

@@ -3,7 +3,7 @@ typedef struct huffmanCode{
 	char character;
 	char *charCode;
 	uint16_t sizeCode;
-	byte endOfFile;
+	uint8_t endOfFile;
 
 	struct huffmanCode *next;
 
@@ -11,7 +11,7 @@ typedef struct huffmanCode{
 
 
 
-void addCharacterHuffmanTable(huffmanCode **headTable, char character, char *code, uint16_t size, byte typeChar){
+void addCharacterHuffmanTable(huffmanCode **headTable, char character, char *code, uint16_t size, uint8_t typeChar){
 	
 	huffmanCode *node = malloc(sizeof(huffmanCode));
 
@@ -51,7 +51,7 @@ void printHuffmanTable(huffmanCode *headTable){
 	}
 }*/
 
-huffmanCode *searchCode(huffmanCode *head, uint16_t size, char character, byte typeChar){
+huffmanCode *searchCode(huffmanCode *head, uint16_t size, char character, uint8_t typeChar){
 	if(head == NULL) return NULL;
 	
 	for(uint16_t i = 0; i<size ; ++i){

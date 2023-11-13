@@ -1,14 +1,14 @@
-//	The size of the file is saved in 4 bytes,
+//	The size of the file is saved in 4 uint8_ts,
 //	I dont know if I am overestimating the size of
 //	the heap, but will stay this way for now.
 int getSizeOfHeap( FILE *compressedFile){
 
 	int size = 0;
-	int byteGot = 0;
+	int uint8_tGot = 0;
 
-	for( byte bitShift = 3; bitShift >= 0; --bitShift){
-		byteGot = fgetc(compressedFile);
-		size += byteGot << (bitShift*8);
+	for( int8_t bitShift = 3; bitShift >= 0; --bitShift){
+		uint8_tGot = fgetc(compressedFile);
+		size += uint8_tGot << (bitShift*8);
 	}
 	
 	return size;
@@ -17,19 +17,19 @@ int getSizeOfHeap( FILE *compressedFile){
 //	As was said on the other function, the information of
 //	2 Nodes is stored in one byte, so this function detach
 //	the information.
-void getNodeInformation( byte *nodeInformation, int size, FILE *compressedFile){
+void getNodeInformation( uint8_t *nodeInformation, int size, FILE *compressedFile){
 
-	int byteHolder = 0;
-	byte bitShift = -4;
+	int byteHOlder = 0;
+	int8_t bitShift = -4;
 	int index = 0;
 
 	while( index < size){
 		if(bitShift < 0){
-			byteHolder = fgetc(compressedFile);
+			byteHOlder = fgetc(compressedFile);
 			bitShift = 4;
 		}
 
-		nodeInformation[index++] = (uint16_t) (byteHolder >> bitShift);
+		nodeInformation[index++] = (uint16_t) (byteHOlder >> bitShift);
 		bitShift -= 4;	
 	
 	}
@@ -44,7 +44,7 @@ void getCharacter(char *character, FILE *compressedFile, int size){
 
 }
 
-void reconstructBinaryTree(Node *headTree, byte *nodeInformation, char *character, int size){
+void reconstructBinaryTree(Node *headTree, uint8_t *nodeInformation, char *character, int size){
 
 	int index1 = 0;
 	int index2 = 1;
@@ -79,7 +79,7 @@ void reconstructBinaryTree(Node *headTree, byte *nodeInformation, char *characte
 }
 
 void decompressAndWrite( FILE *compressedFile, FILE *decompressedFile, Node *headTree){
-
+	typedef char byte;
 	byte endOfFile = 0;
 	int bitIndicator = 0x80;
 	Node *aux = &headTree[0];

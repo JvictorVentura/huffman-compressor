@@ -1,5 +1,6 @@
+
 typedef struct Node{
-	byte type;		//0b01 = char, 0b10 = EOF, 0b11 = Empty Node.
+	uint8_t type;		//0b01 = char, 0b10 = EOF, 0b11 = Empty Node.
 	char character;
 	uint16_t quantity;
 	

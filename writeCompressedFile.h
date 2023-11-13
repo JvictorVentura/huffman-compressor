@@ -1,5 +1,5 @@
 void writeSizeOfHeap(uint16_t size,  FILE *compressedFile){
-	for(byte i = 4 ; i > 0; --i)
+	for(uint8_t i = 4 ; i > 0; --i)
 		//fputc(size >> ((i - 1) * 8), compressedFile);
 		fputc(size >> ((i - 1) * 8), compressedFile);
 }
@@ -7,26 +7,26 @@ void writeSizeOfHeap(uint16_t size,  FILE *compressedFile){
 //	Writes the information of the Nodes on 4 bits
 //	saving space by fitting the information of 2 Nodes
 //	on one byte.
-void writeNodeInformation(byte *nodeInformation, uint16_t size, FILE *compressedFile){
+void writeNodeInformation(uint8_t *nodeInformation, uint16_t size, FILE *compressedFile){
 
-	byte byteWritten = 0;
+	uint8_t biteWritten = 0;
 	int index = 0;
-	byte bitShift = 4;
+	int8_t bitShift = 4;
 
 	while(index < size){
 
 		if(bitShift < 0){
-			fputc(byteWritten, compressedFile);
+			fputc(biteWritten, compressedFile);
 			bitShift = 4;
-			byteWritten = 0;
+			biteWritten = 0;
 		}
 		
-		byteWritten += nodeInformation[index++] << bitShift;
+		biteWritten += nodeInformation[index++] << bitShift;
 		bitShift -= 4;
 
 	}
 
-	fputc(byteWritten, compressedFile);
+	fputc(biteWritten, compressedFile);
 
 }
 
@@ -42,9 +42,9 @@ void writeNodeCharacter(Node **node, FILE *compressedFile, uint16_t size){
 void compressAndWriteFile(FILE *originalFile, FILE *compressedFile, huffmanCode *headTable){
 
 	huffmanCode *code = NULL;
-	byte endFlag = 0;
+	uint8_t endFlag = 0;
 	int bitIndicator = 0x80;
-	uint16_t byteWritten = 0;
+	uint16_t biteWritten = 0;
 	int character = 0;
 	uint16_t codeStringIndex = 0;
 
@@ -68,15 +68,15 @@ void compressAndWriteFile(FILE *originalFile, FILE *compressedFile, huffmanCode 
 				codeStringIndex = 0;
 			}else{
 				if( code->charCode[codeStringIndex++] == '1')
-					byteWritten += bitIndicator;
+					biteWritten += bitIndicator;
 				bitIndicator =  bitIndicator >> 1;
 			}
 
 		}
 
 		
-		fputc(byteWritten, compressedFile);
-		byteWritten = 0;
+		fputc(biteWritten, compressedFile);
+		biteWritten = 0;
 		bitIndicator = 0x80;
 	
 	}
