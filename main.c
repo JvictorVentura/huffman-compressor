@@ -59,33 +59,16 @@ char *newFileName(char *filename, uint8_t *dotLocation, uint8_t *sizeOfExtension
 	
 
 	if(*dotLocation != sizeOfFileName - 1){
-		//nFileName = malloc((*dotLocation) + 6);
 		
-		//for(int i = 0; i < sizeOfFileName; ++i)
-		//	nFileName[i] = fileName[i];
 		strncpy(nFileName, filename, *dotLocation);
 		strcat(nFileName, "huff");
 
-		//nFileName[(*dotLocation) + 1] = 'h';
-		//nFileName[(*dotLocation) + 2] = 'u';
-		//nFileName[(*dotLocation) + 3] = 'f';
-		//nFileName[(*dotLocation) + 4] = 'f';
-		//nFileName[(*dotLocation) + 5] = '\0';
+		
 	}else{
 		nFileName = malloc(sizeOfFileName + 5);
 
 		strcpy(nFileName, filename);
 		strcat(nFileName, ".huff");
-		//for(int i = 0; i < sizeOfFileName; ++i)
-		//	nFileName[i] = fileName[i];
-
-		//nFileName[sizeOfFileName] = '.';
-		//nFileName[sizeOfFileName + 1] = 'h';
-		//nFileName[sizeOfFileName + 2] = 'u';
-		//nFileName[sizeOfFileName + 3] = 'f';
-		//nFileName[sizeOfFileName + 4] = 'f';
-		//nFileName[sizeOfFileName + 5] = '\0';
-
 	}
 
 	return nFileName;
@@ -129,7 +112,7 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	FILE *compressedFile = fopen(nFileName, "wb+");
 
 	writeMagicNumberOnFile(compressedFile);
-	writeOriginalExtensionOnFile(compressedFile, filename, sizeOfExtension, dotLocation+1);
+	//writeOriginalExtensionOnFile(compressedFile, filename, sizeOfExtension, dotLocation+1);
 	writeSizeOfHeap(size, compressedFile);
 	writeNodeInformation(nodeInformation, size, compressedFile);
 	writeNodeCharacter(aux, compressedFile, size);
@@ -142,7 +125,6 @@ void compress(Node *headTree, huffmanCode *headTable, char *filename){
 	fclose(originalFile);
 	fclose(compressedFile);
 	free(nodeInformation);
-	//free(nFileName);
 
 	
 }
@@ -201,7 +183,7 @@ int decompress(char *compressed_file, char *decompressed_file){
 	if(checkMagicNumber(compFile))
 		return 1;
 			
-	char *orgFileName = originalFileName(compFile, compressed_file);
+	//char *orgFileName = originalFileName(compFile, compressed_file);
 
 	int size = getSizeOfHeap(compFile);
 	char *character = malloc(sizeof(uint8_t)*size);		
@@ -217,12 +199,12 @@ int decompress(char *compressed_file, char *decompressed_file){
 	
 	
 	FILE *decompr = NULL;
-	/*if(decompressed_file != NULL){
+	if(decompressed_file != NULL){
 		decompr = fopen(decompressed_file, "wb+");
 	}else{
 		decompr = fopen("decompressedfile", "wb+");		//CHANGE LATER
-	}*/
-	decompr = fopen(orgFileName, "wb+");	
+	}
+	//decompr = fopen(orgFileName, "wb+");	
 	if(decompr == NULL){
 		printf("ERRO [1]\n");
 		return 1;
